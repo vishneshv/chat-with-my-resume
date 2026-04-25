@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HireGraph</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Inter", sans-serif;
+      background: radial-gradient(circle at top, #0f172a, #020617);
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .header {
+      padding: 14px 20px;
+      font-size: 18px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .header span.tagline {
+      font-size: 12px;
+      font-weight: 400;
+      color: #64748b;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-secondary {
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .status-pill {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #94a3b8;
+    }
+
+    .status-pill.ok { color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.35); }
+    .status-pill.err { color: #f87171; border: 1px solid rgba(248, 113, 113, 0.35); }
+
+    .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1 }
+      50% { opacity: 0.3 }
+    }
+
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 16px;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .chat::-webkit-scrollbar { width: 4px; }
+    .chat::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 2px; }
+
+    .message { margin-bottom: 22px; display: flex; flex-direction: column; }
+    .message.user { align-items: flex-end; }
+
+    .bubble {
+      max-width: 78%;
+      padding: 14px 16px;
+      border-radius: 16px;
+      font-size: 15px;
+      line-height: 1.75;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .user .bubble {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+    }
+
+    .ai .bubble {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .bubble ul { padding-left: 20px; margin: 8px 0; }
+    .bubble li { margin: 4px 0; }
+
+    .meta {
+      font-size: 12px;
+      margin-top: 6px;
+      color: #475569;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .meta span {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .conf-g { color: #22c55e !important; }
+    .conf-y { color: #eab308 !important; }
+    .conf-r { color: #ef4444 !important; }
+
+    .reasoning-toggle {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #38bdf8;
+      cursor: pointer;
+      user-select: none;
+      width: fit-content;
+    }
+
+    .reasoning-toggle:hover { text-decoration: underline; }
+
+    .reasoning-box {
+      display: none;
+      margin-top: 8px;
+      padding: 12px 14px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 12px;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      line-height: 1.65;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      word-break: break-word;
+    }
+
+    .reasoning-box.open { display: block; }
+
+    .step-t { color: #6B8CFF; }
+    .step-c { color: #22c55e; }
+    .step-v { color: #f472b6; }
+
+    .loading {
+      font-size: 14px;
+      color: #94a3b8;
+      animation: blink 1.2s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1 }
+      50% { opacity: 0.4 }
+    }
+
+    .input-area {
+      padding: 14px 16px;
+      display: flex;
+      gap: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      outline: none;
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      font-size: 15px;
+      font-family: "Inter", sans-serif;
+    }
+
+    .input-area input:focus { border-color: #2563eb; }
+    .input-area input::placeholder { color: #475569; }
+
+    .input-area button.primary {
+      padding: 0 22px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #000;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .input-area button.primary:hover { filter: brightness(1.05); }
+    .input-area button.primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      filter: none;
+    }
+
+    .hint {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 8px 16px 0;
+      font-size: 11px;
+      color: #475569;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <div class="header-left">
+      ⬡ HireGraph
+      <span class="tagline">agentic interview assistant · same origin as API <span class="dot"></span></span>
+    </div>
+    <div class="header-actions">
+      <span class="status-pill" id="apiStatus" title="Backend health">checking…</span>
+      <button type="button" class="btn-secondary" id="newChatBtn" title="New session (new user id)">New chat</button>
+    </div>
+  </div>
+  <div class="admin-bar"
+    style="max-width:900px;margin:0 auto;padding:6px 16px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:#64748b;">
+    <span id="knowledgeMeta">Index status: loading…</span>
+    <input type="password" id="rebuildToken" placeholder="Rebuild token (if REBUILD_SECRET is set)"
+      style="flex:1;min-width:140px;max-width:220px;padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.35);color:#e2e8f0;font-size:12px;" />
+    <button type="button" class="btn-secondary" id="rebuildBtn">Rebuild index</button>
+  </div>
+  <div class="chat" id="chat">
+    <div class="message ai">
+      <div class="bubble">Hi! I'm HireGraph. Ask about Vishnesh — skills, projects, experience, or GitHub. Use <strong>New chat</strong> to clear context.</div>
+    </div>
+  </div>
+  <div class="input-area">
+    <input type="text" id="queryInput" placeholder="Ask anything about Vishnesh…" autocomplete="off" />
+    <button type="button" class="primary" id="sendBtn">Send</button>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+
+    let userId = localStorage.getItem("hg_uid") || crypto.randomUUID();
+    localStorage.setItem("hg_uid", userId);
+
+    const chatEl = document.getElementById("chat");
+    const inputEl = document.getElementById("queryInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const newChatBtn = document.getElementById("newChatBtn");
+    const apiStatus = document.getElementById("apiStatus");
+
+    function setStatus(ok, text) {
+      apiStatus.textContent = text;
+      apiStatus.className = "status-pill " + (ok ? "ok" : "err");
+    }
+
+    async function pingHealth() {
+      try {
+        const r = await fetch(API_BASE + "/health", { method: "GET" });
+        if (r.ok) setStatus(true, "API online");
+        else setStatus(false, "API error " + r.status);
+      } catch (e) {
+        setStatus(false, "API unreachable");
+      }
+    }
+
+    pingHealth();
+
+    const knowledgeMeta = document.getElementById("knowledgeMeta");
+    const rebuildBtn = document.getElementById("rebuildBtn");
+    const rebuildToken = document.getElementById("rebuildToken");
+
+    async function loadKnowledgeStatus() {
+      try {
+        const r = await fetch(API_BASE + "/api/knowledge/status");
+        const j = await r.json();
+        if (j.last_built_at) {
+          const d = new Date(j.last_built_at);
+          knowledgeMeta.textContent = "Last index build: " + d.toLocaleString();
+        } else {
+          knowledgeMeta.textContent = "Index: not built yet — click Rebuild";
+        }
+      } catch (e) {
+        knowledgeMeta.textContent = "Index status: unavailable";
+      }
+    }
+    loadKnowledgeStatus();
+
+    rebuildBtn.addEventListener("click", async () => {
+      rebuildBtn.disabled = true;
+      try {
+        const headers = {};
+        const tok = rebuildToken.value.trim();
+        if (tok) headers["X-Rebuild-Token"] = tok;
+        const r = await fetch(API_BASE + "/api/knowledge/rebuild", { method: "POST", headers });
+        let j = {};
+        try { j = await r.json(); } catch (_) {}
+        if (r.ok && j.success) {
+          alert("Knowledge index rebuilt successfully.");
+        } else {
+          const msg = j.detail || j.error || r.statusText;
+          alert("Rebuild failed: " + msg);
+        }
+      } catch (e) {
+        alert("Rebuild error: " + e.message);
+      }
+      rebuildBtn.disabled = false;
+      loadKnowledgeStatus();
+    });
+
+    newChatBtn.addEventListener("click", () => {
+      userId = crypto.randomUUID();
+      localStorage.setItem("hg_uid", userId);
+      chatEl.innerHTML = `
+        <div class="message ai">
+          <div class="bubble">New chat started. Ask about Vishnesh — skills, projects, or experience.</div>
+        </div>`;
+      inputEl.focus();
+    });
+
+    inputEl.addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendQuery(); }
+    });
+    sendBtn.addEventListener("click", sendQuery);
+
+    function scrollBottom() { chatEl.scrollTop = chatEl.scrollHeight; }
+
+    function addUserMessage(text) {
+      const div = document.createElement("div");
+      div.className = "message user";
+      div.innerHTML = `<div class="bubble">${escHtml(text)}</div>`;
+      chatEl.appendChild(div);
+      scrollBottom();
+    }
+
+    function createAiMessage() {
+      const div = document.createElement("div");
+      div.className = "message ai";
+      const lsId = "ls-" + Date.now();
+      div.innerHTML = `<div class="bubble"><span class="loading">Thinking…</span></div>
+        <div class="live-status" id="${lsId}" style="font-size:11px;margin-top:6px;min-height:16px;font-family:monospace;color:#475569;"></div>`;
+      div._lsId = lsId;
+      chatEl.appendChild(div);
+      scrollBottom();
+      return div;
+    }
+
+    function finalizeAiMessage(div, result, steps) {
+      const answer = result.answer || "";
+      const conf = typeof result.confidence === "number" ? result.confidence : 0;
+      const cc = conf > 0.8 ? "conf-g" : conf > 0.5 ? "conf-y" : "conf-r";
+      const sources = (result.sources || []).join(", ") || "none";
+      const iters = result.iterations ?? 0;
+      const blocked = result.blocked ? `<span style="color:#f87171"> · blocked</span>` : "";
+
+      let reasoningHtml = "";
+      const seen = new Set();
+      for (const s of steps) {
+        const key = s.content.substring(0, 80);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const cls = s.type === "thought" ? "step-t" : s.type === "tool" ? "step-c" : "step-v";
+        const lbl = s.type === "thought" ? "THOUGHT" : s.type === "tool" ? "TOOL" : "STEP";
+        reasoningHtml += `<div><span class="${cls}">[${lbl}]</span> ${escHtml(s.content.substring(0, 400))}</div>`;
+      }
+
+      div.innerHTML = `
+        <div class="bubble">${mdToHtml(answer)}</div>
+        <div class="meta">
+          <span class="${cc}">confidence: ${Math.round(conf * 100)}%</span>
+          <span>iterations: ${iters}</span>
+          <span>sources: ${escHtml(sources)}</span>${blocked}
+        </div>
+        ${reasoningHtml ? `<div class="reasoning-toggle" onclick="toggleReasoning(this)">▶ show agent trace</div>
+        <div class="reasoning-box">${reasoningHtml}</div>` : ""}
+      `;
+      scrollBottom();
+    }
+
+    function toggleReasoning(el) {
+      const box = el.nextElementSibling;
+      box.classList.toggle("open");
+      el.textContent = box.classList.contains("open") ? "▼ hide agent trace" : "▶ show agent trace";
+    }
+
+    function mdToHtml(t) {
+      if (!t) return "";
+      return String(t)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        .replace(/^\s*[-*] (.+)$/gm, "<li>$1</li>")
+        .replace(/(<li>.*<\/li>)/gs, m => `<ul>${m}</ul>`)
+        .replace(/\n{2,}/g, "<br><br>")
+        .replace(/\n/g, "<br>");
+    }
+
+    function escHtml(t) {
+      return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function appendLive(aiDiv, event) {
+      const live = aiDiv.querySelector(".live-status");
+      const bubble = aiDiv.querySelector(".bubble");
+      if (bubble && bubble.querySelector(".loading")) {
+        bubble.innerHTML = "<span style=\"color:#94a3b8;font-size:13px\">Working…</span>";
+      }
+      if (!live) return;
+      const row = document.createElement("div");
+      const tag = event.type === "tool" ? "TOOL" : "THOUGHT";
+      const node = event.node || "?";
+      row.style.cssText = "margin-top:6px;font-size:11px;line-height:1.45;color:#cbd5e1;border-left:2px solid #334155;padding-left:8px;word-break:break-word;";
+      row.textContent = "[" + tag + " · " + node + "] " + String(event.content || "").substring(0, 400);
+      live.appendChild(row);
+      scrollBottom();
+    }
+
+    async function sendQuery() {
+      const query = inputEl.value.trim();
+      if (!query) return;
+      inputEl.value = "";
+      sendBtn.disabled = true;
+
+      addUserMessage(query);
+      const aiDiv = createAiMessage();
+      const steps = [];
+
+      try {
+        const response = await fetch(API_BASE + "/ask/stream", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query, user_id: userId })
+        });
+
+        if (!response.ok) {
+          throw new Error("HTTP " + response.status + " — is uvicorn running?");
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let finalResult = null;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            try {
+              const event = JSON.parse(line.slice(6));
+              if (event.type === "thought") {
+                steps.push({ type: "thought", content: event.content });
+                appendLive(aiDiv, event);
+              } else if (event.type === "tool") {
+                steps.push({ type: "tool", content: event.content });
+                appendLive(aiDiv, event);
+              } else if (event.type === "final") finalResult = event.result;
+            } catch (_) { }
+          }
+        }
+
+        if (finalResult) finalizeAiMessage(aiDiv, finalResult, steps);
+        else {
+          aiDiv.querySelector(".bubble").innerHTML = "<span style='color:#f87171'>No final response. Check server logs.</span>";
+        }
+      } catch (e) {
+        const msg = escHtml(e.message || String(e));
+        aiDiv.querySelector(".bubble").innerHTML =
+          "<span style='color:#f87171'>Error: " + msg + "</span>";
+      }
+
+      sendBtn.disabled = false;
+      inputEl.focus();
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,31 @@
+Vishnesh Vojjala - Full Stack Developer
+
+Experience:
+- Software Developer at Kore.ai (2022-Present)
+  Building AI-powered chatbot platforms using Node.js, Python, and React
+- Intern at Zendesk (2021)
+  Developed internal tools using Python and AWS
+
+Education:
+- B.Tech in Computer Science, SRM University (2022)
+
+Skills:
+Backend: Python, Node.js, FastAPI, Express, Django, PostgreSQL, MongoDB, Redis, Kafka
+Frontend: React, Angular, TypeScript, JavaScript, HTML/CSS, Tailwind
+AI/ML: LangChain, LangGraph, OpenAI API, Vector DBs, RAG
+DevOps: Docker, AWS, GitHub Actions, Linux
+Tools: Git, GitHub, VS Code, Playwright
+
+Projects:
+1. HireGraph - Agentic AI Interview Assistant using LangGraph, FastAPI, and FAISS
+2. Chatbot Builder - Low-code conversation flow designer at Kore.ai
+3. Document Parser - OCR and NLP pipeline for resume processing
+
+Certifications:
+- AWS Certified Cloud Practitioner
+- Python for Data Science (Coursera)
+
+Achievements:
+- Reduced API response time by 40% through query optimization
+- Built internal CLI tool used by 50+ developers
+- Won internal hackathon for AI automation tool

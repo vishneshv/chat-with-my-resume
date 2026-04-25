@@ -1,0 +1,11 @@
+Detached optional crawler (not wired into RAG by default): memory/crawl_site.py
+
+When you want to use it:
+  pip install playwright
+  playwright install chromium
+  python memory/crawl_site.py
+
+Outputs: memory/crawl_output.json, data/crawled_site.md — merge into data/*.md manually or
+re-add crawled_site.md to rag/document_loader.py if you want it indexed again.
+
+To refresh the index after merging: python -c "from rag.vector_store import build_vector_store; build_vector_store()"

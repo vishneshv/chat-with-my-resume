@@ -1,0 +1,5 @@
+1) https://vishnesh.netlify.app/  
+2) Linkedin Data
+3) Internet Data on my name(full name)
+5) User data in redis with timetoLive
+6) Using AWS features like S3 and anyother also to showcase aws skills and for hands on experience on thta skills
