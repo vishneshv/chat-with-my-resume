@@ -280,7 +280,13 @@
   <script>
     const API_BASE = window.location.origin;
 
-    let userId = localStorage.getItem("hg_uid") || crypto.randomUUID();
+    function generateId() {
+      return typeof crypto !== 'undefined' && crypto.randomUUID 
+        ? crypto.randomUUID() 
+        : 'id-' + Math.random().toString(36).substring(2, 15);
+    }
+
+    let userId = localStorage.getItem("hg_uid") || generateId();
     localStorage.setItem("hg_uid", userId);
 
     const chatEl = document.getElementById("chat");
@@ -349,7 +355,7 @@
     });
 
     newChatBtn.addEventListener("click", () => {
-      userId = crypto.randomUUID();
+      userId = generateId();
       localStorage.setItem("hg_uid", userId);
       chatEl.innerHTML = `
         <div class="message ai">
